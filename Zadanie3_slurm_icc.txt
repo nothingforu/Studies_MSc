@@ -1,0 +1,22 @@
+#!/bin/bash -l
+#SBATCH --job-name="Zadani2_MP" # any name you like
+#SBATCH --output="3zadanie_icc.out" # any name you like, the file with output
+#SBATCH --nodes=1 # number of nodes
+#SBATCH --mem=20000
+#SBATCH --time=00:15:00 # not too much...
+#SBATCH --account=g96-1880 # your grant id
+#SBATCH --partition=topola
+
+module load common/compilers/intel/2018
+icc -fopenmp -std=c99 zadanie3.c -o zadanie3_icc.exe
+
+
+for j in 1 2 4 8 16 32
+do
+
+echo "Uruchamianie programu z $j watkami"
+
+export OMP_NUM_THREADS=$j
+
+srun ./zadanie3_icc.exe
+done

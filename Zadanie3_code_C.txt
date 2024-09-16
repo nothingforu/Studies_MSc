@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+#define NUM_FILES 32
+#define HIST_SIZE 101
+void read_and_count(const char *file_name, int *histogram) {
+    FILE *file = fopen(file_name, "r");
+    if (!file) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    int number;
+    while (fscanf(file, "%d", &number) == 1) {
+        if (number >= 0 && number <= 100) {
+            histogram[number]++;
+        }
+    }
+    fclose(file);
+}
+int main() {
+//Initialize histogram
+    int histogram[HIST_SIZE] = {0};
+double start_time,end_time;
+start_time = omp_get_wtime();
+//Array of file names
+   char file_name[20];
+
+    #pragma omp parallel
+    {
+//Private histogram for each thread
+        int private_histogram[HIST_SIZE] = {0};
+        #pragma omp for schedule(guided)
+        for (int i = 0; i < NUM_FILES; i++) {
+            sprintf(file_name, "file_%d.txt", i);
+//Read file and update private histogram
+            read_and_count(file_name, private_histogram);
+            #pragma omp critical
+            {
+//Combine private histogram into the global histogram
+                for (int j = 0; j < HIST_SIZE; j++) {
+                    histogram[j] += private_histogram[j];
+                }
+            }
+        }
+    }
+//Write final histogram to file
+ end_time = omp_get_wtime();
+ FILE *output_file = fopen("histogram_output.txt", "w");
+    if (!output_file) {
+        perror("Error opening output file");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < HIST_SIZE; i++) {
+        fprintf(output_file, "%d ", histogram[i]);
+    }
+    fclose(output_file);
+    printf("Histogram saved to histogram_output.txt\n");
+printf("Elapsed time: %f seconds\n", end_time - start_time);
+   return 0;
+}
