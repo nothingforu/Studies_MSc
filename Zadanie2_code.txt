@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+#include <time.h>
+#include <math.h>
+
+#define N 1000000000 // Rozmiar wektora
+#define EPSILON 1e-8 // Tolerancja dla metody Newtona, zwi~Ykszona
+
+// Funkcja do obliczania pierwiastka kwadratowego metod~E Newtona
+ double newton_sqrt(double x) {
+if (x == 0.0) return 0.0;
+double guess = x;
+double result = 0.5 * (guess + x / guess);
+// Używamy fabs do porównania warto~[ci zmiennoprzecinkowych
+while (fabs(result - guess) > EPSILON) {
+guess = result;
+result = 0.5 * (guess + x / guess);
+                          }
+    return result;
+                                    }
+ int main() {
+   // Inicjalizacja zmiennych
+  double *A = (double*) malloc(N * sizeof(double));
+ if (A == NULL) {
+ fprintf(stderr, "blad alokacji pami~Yci!\n");
+return EXIT_FAILURE;
+            }
+
+  double norm = 0.0;
+double start_time, end_time;
+                                      
+start_time = omp_get_wtime();                                       
+ #pragma omp parallel
+    {
+  unsigned int seed = time(NULL) ^ omp_get_thread_num();
+ #pragma omp for
+ for (int i = 0; i < N; i++) {
+ A[i] = (double)rand_r(&seed) / RAND_MAX;
+     }
+  }
+#pragma omp parallel for reduction(+:norm)
+         // Obliczenie normy drugiej w sposób równoleg~By
+for (int i = 0; i < N; i++) {
+    norm += A[i] * A[i];
+                                                                                                                               }
+
+ // Zamiana sqrt na newton_sqrt
+
+  norm = newton_sqrt(norm);
+
+  end_time = omp_get_wtime();
+// Wynik
+
+    printf("Norma druga wektora: %f\n", norm);
+
+    printf("Czas wykonania: %f sekund\n", end_time - start_time);
+
+      // Zwolnienie pami~Yci
+
+free(A);
+
+
+return 0;
+
+                                                                                                      }

@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+#include <time.h>
+
+int main(int argc, char* argv[]) {
+    int n = 100000000; // Rozmiar wektora
+    float *A = (float*) malloc(n * sizeof(float));
+    float *B = (float*) malloc(n * sizeof(float));
+    float *C = (float*) malloc(n * sizeof(float));
+
+    if (A == NULL || B == NULL || C == NULL) {
+        printf("Blad alokacji pamieci\n");
+        return 1;
+    }
+
+double start_time = omp_get_wtime();
+#pragma omp parallel
+{
+#pragma omp single
+{
+for (int i = 0; i < n; i++) {
+B[i] = (float) rand() / RAND_MAX;
+C[i] = (float) rand() / RAND_MAX;
+}
+}
+#pragma omp for
+for (int i = 0; i < n; i++) {
+A[i] = B[i] + C[i];
+ }
+}
+//float end_time = (float)omp_get_wtime();
+double end_time = omp_get_wtime();
+printf("Czas dodawania wektorow: %.5f\n", end_time - start_time);
+ // Wypisanie wymaganych elementów
+printf("A[0] = %f, B[0] = %f, C[0] = %f\n", A[0], B[0], C[0]);
+printf("A[%d] = %f, B[%d] = %f, C[%d] = %f\n", n-1, A[n-1], n-1, B[n-1], n-1, C[n-1]);
+ // Zwolnienie pami~Yci
+   free(A);
+   free(B);
+   free(C);
+ return 0;
+  }

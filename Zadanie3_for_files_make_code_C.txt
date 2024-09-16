@@ -1,0 +1,26 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define NUM_FILES 32
+#define NUM_NUMBERS 5000000
+
+int main() {
+    srand(time(NULL));
+    for (int i = 0; i < NUM_FILES; i++) {
+        char file_name[20];
+        snprintf(file_name, sizeof(file_name), "file_%d.txt", i);
+        FILE *file = fopen(file_name, "w");
+        if (!file) {
+            perror("Error opening file");
+            return EXIT_FAILURE;
+        }
+        for (int j = 0; j < NUM_NUMBERS; j++) {
+            int number = rand() % 101;  // Losowa liczba z przedzia~Bu [0, 100]
+            fprintf(file, "%d ", number);
+        }
+        fclose(file);
+        printf("Generated %s\n", file_name);
+    }
+    return EXIT_SUCCESS;
+}

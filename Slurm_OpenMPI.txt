@@ -1,0 +1,24 @@
+#!/bin/bash -l
+#SBATCH --job-name="test_processes"  # Nazwa zadania
+#SBATCH --nodes=4  # Liczba ww
+#SBATCH --ntasks-per-node=4
+#SBATCH --mem=15000  # MB)
+#SBATCH --time=00:05:00  #ykonania
+#SBATCH --account=g96-1880  #tor grantu
+#SBATCH --partition=topola  # Partycja
+#SBATCH --output="Wynik_zadanie1_MPI.out"  # iowy
+
+module load common/mpi/openmpi/4.1.6
+module load common/compilers/gcc/12.3.0
+
+# Kompilacja programu
+mpicc -g -o zadanie1_MPI.exe solve_zadanie1_MPI.c -lm
+# Ptla dla różnych liczby procesów
+for procs in 1 2 4 8 16 32; do
+    echo "Uruchamiam dla $procs procesów" >> Wynik_zadanie1_MPI.out
+    mpirun -n $procs ./zadanie1_MPI.exe >> Wynik_zadanie1_MPI.out
+    echo "Zakczono dla $procs procesów" >> Wynik_zadanie1_MPI.out
+done
+
+module unload common/mpi/openmpi/4.1.6
+module unload common/compilers/gcc/12.3.0
